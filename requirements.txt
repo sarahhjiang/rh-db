@@ -4,6 +4,7 @@ numpy
 sqlalchemy
 flask
 Flask-sqlalchemy
+Flask-Login
 requests
 flask-marshmallow
 marshmallow-sqlalchemy
