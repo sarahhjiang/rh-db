@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Request</title>
+</head>
+<body>
+    <h1>Add Request</h1>
+    <form action="{{ url_for('add_request') }}" method="post">
+        <label for="OrganizationKey">Organization:</label>
+        <select id="OrganizationKey" name="OrganizationKey" required>
+            {% for organization in organizations %}
+                <option value="{{ organization.OrganizationKey }}">{{ organization.OrganizationName }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="Description">Description:</label>
+        <input type="text" id="Description" name="Description" required>
+
+        <label for="TrackersRequested">Trackers Requested:</label>
+        <input type="number" id="TrackersRequested" name="TrackersRequested" required>
+
+        <label for="DateRequested">Date Requested:</label>
+        <input type="date" id="DateRequested" name="DateRequested" required>
+
+        <label for="Status">Status:</label>
+        <select id="Status" name="Status" required>
+            <option value="unfulfilled">Unfulfilled</option>
+            <option value="contacted">Contacted</option>
+            <option value="sent out">Sent Out</option>
+            <option value="received">Received</option>
+        </select>
+
+        <button type="submit">Add Request</button>
+    </form>
+    <a href="{{ url_for('create_main') }}">Back to Home</a>
+</body>
+</html>

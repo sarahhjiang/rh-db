@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Devices Donated by State</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div style="float: left;">
+            <a href="{{ url_for('create_main') }}">Home</a> |
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('add_device') }}">Add Device</a> |
+                <a href="{{ url_for('remove_device') }}">Remove Device</a> |
+                <a href="{{ url_for('add_donor') }}">Add Donor</a> |
+                <a href="{{ url_for('remove_donor') }}">Remove Donor</a> |
+                <a href="{{ url_for('add_organization') }}">Add Organization</a> |
+                <a href="{{ url_for('remove_organization') }}">Remove Organization</a> |
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a> |
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+        <div style="float: right;">
+            {% if current_user.is_authenticated %}
+                Hi, {{ current_user.username }}!
+            {% endif %}
+        </div>
+        <div style="clear: both;"></div>
+    </nav>
+    <hr>
+    <div class="content">
+        <h1>Devices Donated by State</h1>
+        <img src="{{ url_for('plot_image') }}" alt="Devices Donated by State Heatmap">
+    </div>
+</body>
+</html>

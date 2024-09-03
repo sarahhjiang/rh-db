@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Devices Donated by {{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}</h1>
+    <table>
+        <tr>
+            <th>Device Model Name</th>
+            <th>Device Count</th>
+            <th>Manufacturer</th>
+            <th>Donation Date</th>
+        </tr>
+        {% for device in devices %}
+        <tr>
+            <td>{{ device.device_model.DeviceModelName }}</td>
+            <td>{{ device.device_model.DeviceCount }}</td>
+            <td>{{ device.device_model.DeviceManufacturerKey }}</td>
+            <td>{{ device.TrackerDonationDateReceived.strftime('%m/%d/%Y') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

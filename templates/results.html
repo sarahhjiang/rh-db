@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+
+    {% if search_type == 'donors' %}
+        <h2>Donors</h2>
+        {% if results %}
+            <ul>
+            {% for donor in results %}
+                <li>{{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No donors found.</p>
+        {% endif %}
+    {% elif search_type == 'organizations' %}
+        <h2>Organizations</h2>
+        {% if results %}
+            <ul>
+            {% for org in results %}
+                <li>{{ org.OrganizationName }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No organizations found.</p>
+        {% endif %}
+    {% elif search_type == 'devices' %}
+        <h2>Devices</h2>
+        {% if results %}
+            <ul>
+            {% for device in results %}
+                <li>
+                    <strong>Model Name:</strong> {{ device.DeviceModelName }}<br>
+                    <strong>Count:</strong> {{ device.DeviceCount }}<br>
+                    <strong>Donor:</strong> {{ device.TrackerDonorsFirstName }} {{ device.TrackerDonorsLastName }}<br>
+                    <strong>Date Donated:</strong> {{ device.TrackerDonationDateReceived.strftime('%Y-%m-%d') }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No devices found.</p>
+        {% endif %}
+    {% endif %}
+
+    <a href="{{ url_for('search') }}">Back to Search</a>
+    <a href="{{ url_for('create_main') }}">Back to Home</a>
+</body>
+</html>

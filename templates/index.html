@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Recycle Health Dashboard{% endblock %}
+
+{% block content %}
+<h1>Recycle Health Dashboard</h1>
+
+{% if current_user.role == 'admin' %}
+
+    <h2>Device Models</h2>
+    <table>
+        <tr>
+            <th>Device Manufacturer</th>
+            <th>Device Model Name</th>
+            <th>Device Count</th>
+        </tr>
+        {% for device in devices %}
+        <tr>
+            <td>{{ device.DeviceManufacturerKey }}</td>
+            <td>{{ device.DeviceModelName }}</td>
+            <td>{{ device.DeviceCount }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Donors</h2>
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Address 1</th>
+            <th>Address 2</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zip Code</th>
+            <th>Devices Donated</th>
+        </tr>
+        {% for donor in donors %}
+        <tr>
+            <td>{{ donor.TrackerDonorsFirstName }}</td>
+            <td>{{ donor.TrackerDonorsLastName }}</td>
+            <td>{{ donor.TrackerDonorsAddress1 }}</td>
+            <td>{{ donor.TrackerDonorsAddress2 }}</td>
+            <td>{{ donor.TrackerDonorsCity }}</td>
+            <td>{{ donor.TrackerDonorsStateKey }}</td>
+            <td>{{ donor.TrackerDonorsZipCode }}</td>
+            <td><a href="{{ url_for('donor_devices', donor_id=donor.TrackerDonorKey) }}">View Devices</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Organizations</h2>
+    <table>
+        <tr>
+            <th>Organization Name</th>
+            <th>Type</th>
+            <th>Address 1</th>
+            <th>Address 2</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zip Code</th>
+            <th>Contact Name</th>
+            <th>Contact Email</th>
+            <th>Contact Phone</th>
+            <th>Actions</th>
+        </tr>
+        {% for organization in organizations %}
+        <tr>
+            <td>{{ organization.OrganizationName }}</td>
+            <td>{{ organization.OrganizationTypeKey }}</td>
+            <td>{{ organization.OrganizationAddress1 }}</td>
+            <td>{{ organization.OrganizationAddress2 }}</td>
+            <td>{{ organization.OrganizationCity }}</td>
+            <td>{{ organization.OrganizationStateKey }}</td>
+            <td>{{ organization.OrganizationZipCode }}</td>
+            <td>{{ organization.OrganizationContactFirstName }} {{ organization.OrganizationContactLastName }}</td>
+            <td>{{ organization.OrganizationContactEmailAddress }}</td>
+            <td>{{ organization.OrganizationContactPhoneNumber }}</td>
+            <td>
+                <a href="{{ url_for('organization_requests', org_id=organization.OrganizationKey) }}">View Requests</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% else %}
+    <h2>Organizations</h2>
+    <table>
+        <tr>
+            <th>Organization Name</th>
+            <th>Type</th>
+            <th>State</th>
+            <th>Actions</th>
+        </tr>
+        {% for organization in organizations %}
+        <tr>
+            <td>{{ organization.OrganizationName }}</td>
+            <td>{{ organization.OrganizationTypeKey }}</td>
+            <td>{{ organization.OrganizationStateKey }}</td>
+            <td>
+                <a href="{{ url_for('organization_requests', org_id=organization.OrganizationKey) }}">View Requests</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Device Inventory</h2>
+    <table>
+        <tr>
+            <th>Device Manufacturer</th>
+            <th>Device Model Name</th>
+            <th>Device Count</th>
+        </tr>
+        {% for device in devices %}
+        <tr>
+            <td>{{ device.DeviceManufacturerKey }}</td>
+            <td>{{ device.DeviceModelName }}</td>
+            <td>{{ device.DeviceCount }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% endblock %}

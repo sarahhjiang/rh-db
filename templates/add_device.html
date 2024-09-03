@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Add a New Device</h1>
+    <form action="{{ url_for('add_device') }}" method="post">
+        <label for="DeviceManufacturerKey">Manufacturer:</label><br>
+        <input type="text" id="DeviceManufacturerKey" name="DeviceManufacturerKey" required><br><br>
+        <label for="DeviceModelName">Device Model Name:</label><br>
+        <input type="text" id="DeviceModelName" name="DeviceModelName" required><br><br>
+        <label for="DeviceCount">Device Count:</label><br>
+        <input type="number" id="DeviceCount" name="DeviceCount" required><br><br>
+        <label for="DonorName">Donor:</label><br>
+        <input type="text" id="DonorName" name="DonorName" required><br><br>
+        <label for="TrackerDonationDateReceived">Donation Date:</label><br>
+        <input type="date" id="TrackerDonationDateReceived" name="TrackerDonationDateReceived" required><br><br>
+        <input type="submit" value="Add Device">
+    </form>
+{% endblock %}

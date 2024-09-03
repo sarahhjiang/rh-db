@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Remove Organization</h1>
+<form action="{{ url_for('remove_organization') }}" method="post">
+    <label for="OrganizationKey">Select Organization to Remove:</label><br>
+    <select id="OrganizationKey" name="OrganizationKey" required>
+        {% for organization in organizations %}
+            <option value="{{ organization.OrganizationKey }}">{{ organization.OrganizationName }}</option>
+        {% endfor %}
+    </select><br><br>
+    <input type="submit" value="Remove Organization">
+</form>
+{% endblock %}

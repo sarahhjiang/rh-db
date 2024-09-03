@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Requests for {{ organization.OrganizationName }}</h1>
+    <table>
+        <tr>
+            <th>Program Description</th>
+            <th>Date Requested</th>
+            <th>Date Sent Out</th>
+            <th>Trackers Number Requested</th>
+            <th>Trackers Number Sent</th>
+        </tr>
+        {% for request in requests %}
+        <tr>
+            <td>{{ request.OrganizationProgramDescription }}</td>
+            <td>{{ request.OrganizationProgramDateRequested.strftime('%m/%d/%Y') if request.OrganizationProgramDateRequested else 'N/A' }}</td>
+            <td>{{ request.OrganizationProgramDateSentOut.strftime('%m/%d/%Y') if request.OrganizationProgramDateSentOut else 'N/A' }}</td>
+            <td>{{ request.OrganizationProgramTrackersNumberRequested }}</td>
+            <td>{{ request.OrganizationProgramTrackersNumberSent }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
