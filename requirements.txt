@@ -7,3 +7,4 @@ Flask-sqlalchemy
 requests
 flask-marshmallow
 marshmallow-sqlalchemy
+gunicorn
