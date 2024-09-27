@@ -1,41 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results</title>
-</head>
-<body>
-    <h1>Search Results</h1>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Search Results</h1>
 
     {% if search_type == 'donors' %}
         <h2>Donors</h2>
         {% if results %}
-            <ul>
+            <ul class="list-group">
             {% for donor in results %}
-                <li>{{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}</li>
+                <li class="list-group-item">
+                    {{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}
+                </li>
             {% endfor %}
             </ul>
         {% else %}
-            <p>No donors found.</p>
+            <div class="alert alert-warning" role="alert">No donors found.</div>
         {% endif %}
     {% elif search_type == 'organizations' %}
         <h2>Organizations</h2>
         {% if results %}
-            <ul>
+            <ul class="list-group">
             {% for org in results %}
-                <li>{{ org.OrganizationName }}</li>
+                <li class="list-group-item">
+                    {{ org.OrganizationName }}
+                </li>
             {% endfor %}
             </ul>
         {% else %}
-            <p>No organizations found.</p>
+            <div class="alert alert-warning" role="alert">No organizations found.</div>
         {% endif %}
     {% elif search_type == 'devices' %}
         <h2>Devices</h2>
         {% if results %}
-            <ul>
+            <ul class="list-group">
             {% for device in results %}
-                <li>
+                <li class="list-group-item">
                     <strong>Model Name:</strong> {{ device.DeviceModelName }}<br>
                     <strong>Count:</strong> {{ device.DeviceCount }}<br>
                     <strong>Donor:</strong> {{ device.TrackerDonorsFirstName }} {{ device.TrackerDonorsLastName }}<br>
@@ -44,11 +44,11 @@
             {% endfor %}
             </ul>
         {% else %}
-            <p>No devices found.</p>
+            <div class="alert alert-warning" role="alert">No devices found.</div>
         {% endif %}
     {% endif %}
 
-    <a href="{{ url_for('search') }}">Back to Search</a>
-    <a href="{{ url_for('create_main') }}">Back to Home</a>
-</body>
-</html>
+    <a href="{{ url_for('search') }}" class="btn btn-secondary mt-4">Back to Search</a>
+    <a href="{{ url_for('create_main') }}" class="btn btn-primary mt-4">Back to Home</a>
+</div>
+{% endblock %}

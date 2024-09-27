@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Fulfilled Requests</h1>
+    
+    {% if fulfilled_requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Organization</th>
+                    <th>Program Description</th>
+                    <th>Date Sent Out</th>
+                    <th>Trackers Sent</th>
+                    <th>Devices</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in fulfilled_requests %}
+                <tr>
+                    <td>{{ request.organization.OrganizationName }}</td>
+                    <td>{{ request.OrganizationProgramDescription }}</td>
+                    <td>{{ request.OrganizationProgramDateSentOut.strftime('%Y-%m-%d') if request.OrganizationProgramDateSentOut else 'N/A' }}</td>
+                    <td>{{ request.OrganizationProgramTrackersNumberSent }}</td>
+                    <td>
+                        <ul>
+                        {% for device in request.tracker_donor_devices %}
+                            <li>{{ device.device_model.DeviceModelName }}</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No fulfilled requests found.</p>
+    {% endif %}
+{% endblock %}

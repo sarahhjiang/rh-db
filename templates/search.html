@@ -1,25 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search</title>
-</head>
-<body>
-    <h1>Search Donors, Organizations, and Devices</h1>
-    <form action="{{ url_for('search_results') }}" method="get">
-        <label for="query">Search:</label>
-        <input type="text" id="query" name="query" required>
+{% extends "base.html" %}
 
-        <label for="search_type">Search Type:</label>
-        <select id="search_type" name="search_type" required>
-            <option value="donors">Donors</option>
-            <option value="organizations">Organizations</option>
-            <option value="devices">Devices</option>
-        </select>
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Search Donors, Organizations, and Devices</h1>
 
-        <button type="submit">Search</button>
+    <form action="{{ url_for('search_results') }}" method="get" class="mt-4">
+        <div class="form-group">
+            <label for="query">Search:</label>
+            <input type="text" id="query" name="query" class="form-control" required>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="search_type">Search Type:</label>
+            <select id="search_type" name="search_type" class="form-control" required>
+                <option value="donors">Donors</option>
+                <option value="organizations">Organizations</option>
+                <option value="devices">Devices</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Search</button>
     </form>
-    <a href="{{ url_for('create_main') }}">Back to Home</a>
-</body>
-</html>
+
+    <a href="{{ url_for('create_main') }}" class="btn btn-secondary mt-4">Back to Home</a>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin
+from datetime import datetime
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -13,13 +14,18 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), nullable=False, unique=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(150), nullable=False)
-    role = db.Column(db.String(50), nullable=False, default='public')
+    role = db.Column(db.String(50), nullable=False, default='public')  # Role to manage access
 
     def set_password(self, password):
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password, password)
+
+    def is_admin(self):
+        """Helper method to check if the user is an admin."""
+        return self.role == 'admin'
+
 
 class Organization(db.Model):
     __tablename__ = 'tblOrganization'
@@ -38,7 +44,11 @@ class Organization(db.Model):
     OrganizationContactTitle = db.Column(db.String, nullable=True)
     OrganizationAmenabletoDonation = db.Column(db.String, nullable=True)
     OrganizationShareSuccessStory = db.Column(db.String, nullable=True)
-    OrganizationDateCreatedTS = db.Column(db.DateTime, nullable=True)
+    OrganizationDateCreatedTS = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Organization {self.OrganizationName}>'
+
 
 class OrganizationProgram(db.Model):
     __tablename__ = 'tblOrganizationProgram'
@@ -52,7 +62,15 @@ class OrganizationProgram(db.Model):
     OrganizationProgramShippingCost = db.Column(db.Float, nullable=True)
     OrganizationProgramAmountPaid = db.Column(db.Float, nullable=True)
     ProgramStatusKey = db.Column(db.Integer, nullable=True)
-    OrganizationProgramDateCreatedTS = db.Column(db.DateTime, nullable=True)
+    OrganizationProgramDateCreatedTS = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def is_fulfilled(self):
+        """Helper method to check if a program has been fulfilled (trackers have been sent)."""
+        return self.OrganizationProgramTrackersNumberSent and self.OrganizationProgramTrackersNumberSent > 0
+
+    def __repr__(self):
+        return f'<OrganizationProgram {self.OrganizationProgramDescription}>'
+
 
 class Communication(db.Model):
     __tablename__ = 'tblOrganizationCommunication'
@@ -61,21 +79,33 @@ class Communication(db.Model):
     CommunicationTypeKey = db.Column(db.Integer, db.ForeignKey('tlkpCommunicationType.CommunicationTypeKey'), nullable=False)
     CommunicationTypeDate = db.Column(db.DateTime, nullable=True)
     CommunicationTypeNote = db.Column(db.String, nullable=True)
-    CommunicationTypeDateCreatedTS = db.Column(db.DateTime, nullable=True)
+    CommunicationTypeDateCreatedTS = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Communication {self.CommunicationTypeNote}>'
+
 
 class CommunicationType(db.Model):
     __tablename__ = 'tlkpCommunicationType'
     CommunicationTypeKey = db.Column(db.Integer, primary_key=True)
     CommunicationTypeName = db.Column(db.String, nullable=True)
     CommunicationTypeDescription = db.Column(db.String, nullable=True)
-    CommunicationTypeCreateTS = db.Column(db.DateTime, nullable=True)
+    CommunicationTypeCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<CommunicationType {self.CommunicationTypeName}>'
+
 
 class State(db.Model):
     __tablename__ = 'tlkpState'
     StateKey = db.Column(db.Integer, primary_key=True)
     StateName = db.Column(db.String, nullable=True)
     StateAbbrev = db.Column(db.String, nullable=True)
-    StateCreateTS = db.Column(db.DateTime, nullable=True)
+    StateCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<State {self.StateName}>'
+
 
 class TrackerDonors(db.Model):
     __tablename__ = 'tblTrackerDonors'
@@ -88,6 +118,10 @@ class TrackerDonors(db.Model):
     TrackerDonorsStateKey = db.Column(db.Integer, db.ForeignKey('tlkpState.StateKey'))
     TrackerDonorsZipCode = db.Column(db.String(10))
 
+    def __repr__(self):
+        return f'<TrackerDonor {self.TrackerDonorsFirstName} {self.TrackerDonorsLastName}>'
+
+
 class TrackerDonorDevices(db.Model):
     __tablename__ = 'tblTrackerDonorDevices'
     TrackerDonorDevicesKey = db.Column(db.Integer, primary_key=True)
@@ -97,8 +131,12 @@ class TrackerDonorDevices(db.Model):
     DeviceModelKey = db.Column(db.Integer, db.ForeignKey('tlkpDeviceModels.DeviceModelKey'), nullable=False)
     OrganizationProgramKey = db.Column(db.Integer, db.ForeignKey('tblOrganizationProgram.OrganizationProgramKey'), nullable=True)  # Make nullable
     TrackerDonationDateSentOut = db.Column(db.DateTime, nullable=True)
-    TrackerDonorDevicesDateCreateTS = db.Column(db.DateTime, nullable=True)
+    TrackerDonorDevicesDateCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
     device_model = db.relationship('DeviceModels', backref='tracker_donor_devices', lazy=True)
+
+    def __repr__(self):
+        return f'<TrackerDonorDevices {self.TrackerDonationLetter}>'
+
 
 class DeviceModels(db.Model):
     __tablename__ = 'tlkpDeviceModels'
@@ -106,47 +144,63 @@ class DeviceModels(db.Model):
     DeviceManufacturerKey = db.Column(db.Integer, db.ForeignKey('tlkpDeviceManufacturer.DeviceManufacturerKey'), nullable=False)
     DeviceModelName = db.Column(db.String, nullable=True)
     DeviceCount = db.Column(db.Integer, nullable=True)
-    DeviceModelCreateTS = db.Column(db.DateTime, nullable=True)
+    DeviceModelCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
     donations = db.relationship('TrackerDonorDevices', backref='device', lazy=True)
+
+    def __repr__(self):
+        return f'<DeviceModels {self.DeviceModelName}>'
+
 
 class DeviceManufacturer(db.Model):
     __tablename__ = 'tlkpDeviceManufacturer'
     DeviceManufacturerKey = db.Column(db.Integer, primary_key=True)
     DeviceManufacturerName = db.Column(db.String, nullable=True)
-    DeviceManufacturerCreateTS = db.Column(db.DateTime, nullable=True)
+    DeviceManufacturerCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<DeviceManufacturer {self.DeviceManufacturerName}>'
+
 
 # Schema definitions
 class OrganizationSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Organization
 
+
 class OrganizationProgramSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = OrganizationProgram
+
 
 class CommunicationSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Communication
 
+
 class CommunicationTypeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CommunicationType
+
 
 class StateSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = State
 
+
 class TrackerDonorsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = TrackerDonors
+
 
 class TrackerDonorDevicesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = TrackerDonorDevices
 
+
 class DeviceModelsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = DeviceModels
+
 
 class DeviceManufacturerSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

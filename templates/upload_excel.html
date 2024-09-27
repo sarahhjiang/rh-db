@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Upload Excel File</h1>
+
+    <form action="{{ url_for('upload_excel') }}" method="post" enctype="multipart/form-data">
+        <label for="file">Select an Excel file:</label><br><br>
+        <input type="file" id="file" name="file" required><br><br>
+        <input type="submit" value="Upload">
+    </form>
+
+    <p>Ensure the Excel file contains the following columns:</p>
+    <ul>
+        <li>FirstName</li>
+        <li>LastName</li>
+        <li>Address1</li>
+        <li>City</li>
+        <li>StateKey</li>
+        <li>ZipCode</li>
+    </ul>
+{% endblock %}

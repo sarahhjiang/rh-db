@@ -42,6 +42,21 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
+# Utility function to check if the user is an admin
+def is_admin():
+    return current_user.is_authenticated and current_user.role == 'admin'
+
+# Custom decorator for admin routes
+from functools import wraps
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_admin():
+            flash('Admin access required to view this page.', 'danger')
+            return redirect(url_for('create_main'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Search page route
 @app.route('/search')
 @login_required
@@ -64,24 +79,22 @@ def search_results():
             (TrackerDonors.TrackerDonorsFirstName.ilike(f'%{query}%')) |
             (TrackerDonors.TrackerDonorsLastName.ilike(f'%{query}%'))
         ).all()
-        print(f"Donors search results for '{query}': {results}")
     elif search_type == 'organizations':
         results = Organization.query.filter(
             Organization.OrganizationName.ilike(f'%{query}%')
         ).all()
-        print(f"Organizations search results for '{query}': {results}")
     elif search_type == 'devices':
         results = DeviceModels.query.filter(
             DeviceModels.DeviceModelName.ilike(f'%{query}%'),
         ).all()
-        print(f"Devices search results for '{query}': {results}")
 
     return render_template('results.html', results=results, search_type=search_type)
 
 
-# Route to add a device
+# Route to add a device (admin-only)
 @app.route('/add_device', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def add_device():
     if request.method == 'POST':
         DeviceManufacturerKey = request.form.get('DeviceManufacturerKey')
@@ -89,13 +102,6 @@ def add_device():
         DeviceCount = request.form.get('DeviceCount')
         DonorName = request.form.get('DonorName')
         TrackerDonationDateReceived = request.form.get('TrackerDonationDateReceived')
-
-        print("Received form data:")
-        print("DeviceManufacturerKey:", DeviceManufacturerKey)
-        print("DeviceModelName:", DeviceModelName)
-        print("DeviceCount:", DeviceCount)
-        print("DonorName:", DonorName)
-        print("TrackerDonationDateReceived:", TrackerDonationDateReceived)
 
         if DeviceManufacturerKey and DeviceModelName and DeviceCount and DonorName and TrackerDonationDateReceived:
             donor = TrackerDonors.query.filter(
@@ -109,7 +115,7 @@ def add_device():
                     DeviceCount=DeviceCount
                 )
                 db.session.add(new_device_model)
-                db.session.flush()  # This will create the DeviceModelKey for the new device
+                db.session.flush()
 
                 # Convert the date string from the form to a datetime object
                 donation_date = datetime.strptime(TrackerDonationDateReceived, '%Y-%m-%d')
@@ -124,67 +130,47 @@ def add_device():
                 
                 return redirect(url_for('create_main'))
             else:
-                print("Donor not found")
                 return "Donor not found", 400
         else:
-            print("Form data missing")
             return "Form data missing", 400
 
     return render_template('add_device.html')
 
-# Route to remove a device
+# Route to remove a device (admin-only)
 @app.route('/remove_device', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def remove_device():
     if request.method == 'POST':
         device_id = request.form.get('DeviceModelKey')
         donor_id = request.form.get('DonorKey')
 
-        print("Received form data for removal:")
-        print("DeviceModelKey:", device_id)
-        print("DonorKey:", donor_id)
-
         device = DeviceModels.query.get(device_id)
         donor = TrackerDonors.query.get(donor_id)
 
-        if device:
-            print("Device found:", device.DeviceModelName)
-        else:
-            print("Device not found")
-
-        if donor:
-            print("Donor found:", donor.TrackerDonorsFirstName, donor.TrackerDonorsLastName)
-        else:
-            print("Donor not found")
-
         if device and donor:
-            # Ensure to remove the association first
             association = TrackerDonorDevices.query.filter_by(DeviceModelKey=device_id, TrackerDonorsKey=donor_id).first()
             if association:
                 db.session.delete(association)
                 db.session.commit()
-                print("Device-donor association removed")
-            else:
-                print("No device-donor association found")
 
-            # If the device is no longer associated with any donor, remove the device
             remaining_associations = TrackerDonorDevices.query.filter_by(DeviceModelKey=device_id).all()
             if not remaining_associations:
                 db.session.delete(device)
                 db.session.commit()
-                print("Device removed as it is no longer associated with any donor")
 
             return redirect(url_for('create_main'))
         else:
-            print("Device or donor not found")
+            return "Device or donor not found", 400
 
     devices = DeviceModels.query.all()
     donors = TrackerDonors.query.all()
     return render_template('remove_device.html', devices=devices, donors=donors)
 
-# Route to add a donor
+# Route to add a donor (admin-only)
 @app.route('/add_donor', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def add_donor():
     if request.method == 'POST':
         first_name = request.form.get('FirstName')
@@ -211,13 +197,14 @@ def add_donor():
             
             return redirect(url_for('create_main'))
         else:
-            print("Form data missing")
+            return "Form data missing", 400
 
     return render_template('add_donor.html')
 
-# Route to remove a donor
+# Route to remove a donor (admin-only)
 @app.route('/remove_donor', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def remove_donor():
     if request.method == 'POST':
         donor_id = request.form.get('TrackerDonorKey')
@@ -234,9 +221,10 @@ def remove_donor():
     donors = TrackerDonors.query.all()
     return render_template('remove_donor.html', donors=donors)
 
-# Route to add an organization
+# Admin-only routes for adding/removing organizations
 @app.route('/add_organization', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def add_organization():
     if request.method == 'POST':
         org_name = request.form.get('OrganizationName')
@@ -270,13 +258,13 @@ def add_organization():
             
             return redirect(url_for('create_main'))
         else:
-            print("Form data missing")
+            return "Form data missing", 400
 
     return render_template('add_organization.html')
 
-# Route to remove an organization
 @app.route('/remove_organization', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def remove_organization():
     if request.method == 'POST':
         org_id = request.form.get('OrganizationKey')
@@ -287,10 +275,28 @@ def remove_organization():
             db.session.commit()
             return redirect(url_for('create_main'))
         else:
-            print("Organization not found")
+            return "Organization not found", 400
 
     organizations = Organization.query.all()
     return render_template('remove_organization.html', organizations=organizations)
+
+# Fulfilled requests (admin-only)
+@app.route('/fulfilled_requests', methods=['GET'])
+@login_required
+@admin_required
+def fulfilled_requests():
+    fulfilled_requests = OrganizationProgram.query.filter(OrganizationProgram.OrganizationProgramTrackersNumberSent > 0).all()
+
+    fulfilled_data = []
+    for request in fulfilled_requests:
+        devices = TrackerDonorDevices.query.filter_by(OrganizationProgramKey=request.OrganizationProgramKey).all()
+        fulfilled_data.append({
+            'request': request,
+            'devices': devices
+        })
+    
+    return render_template('fulfilled_requests.html', fulfilled_data=fulfilled_data)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -315,27 +321,6 @@ def register():
     
     return render_template('register.html')
 
-@app.route('/donor/<int:donor_id>/devices', methods=['GET'])
-@login_required
-def donor_devices(donor_id):
-    donor = TrackerDonors.query.get_or_404(donor_id)
-    devices = TrackerDonorDevices.query.filter_by(TrackerDonorsKey=donor_id).all()
-    return render_template('donor_devices.html', donor=donor, devices=devices)
-
-@app.route('/organization_requests/<int:org_id>', methods=['GET'])
-@login_required
-def organization_requests(org_id):
-    organization = Organization.query.get_or_404(org_id)
-    requests = OrganizationProgram.query.filter_by(OrganizationKey=org_id).all()
-    return render_template('organization_requests.html', organization=organization, requests=requests)
-
-# Route to plot devices per state
-@app.route('/plot_donors', methods=['GET'])
-@login_required
-def plot_donors():
-    db_url = 'sqlite:///' + os.path.join(basedir, 'rh_app.db')
-    plot_path = plot_donors_per_state(db_url)
-    return render_template('plot_donors.html', plot_path=plot_path)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -353,112 +338,77 @@ def login():
     
     return render_template('login.html')
 
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/', methods=['GET'])
+@app.route('/export_data/<string:data_type>', methods=['GET'])
 @login_required
-def create_main():
-    if current_user.role == 'admin':
-        all_data = Organization.query.join(OrganizationProgram, Organization.OrganizationKey == OrganizationProgram.OrganizationKey)\
-                                     .join(TrackerDonorDevices, OrganizationProgram.OrganizationProgramKey == TrackerDonorDevices.OrganizationProgramKey)\
-                                     .join(TrackerDonors, TrackerDonorDevices.TrackerDonorsKey == TrackerDonors.TrackerDonorKey)\
-                                     .join(DeviceModels, TrackerDonorDevices.DeviceModelKey == DeviceModels.DeviceModelKey)\
-                                     .add_columns(Organization.OrganizationName,
-                                                  Organization.OrganizationContactFirstName,
-                                                  Organization.OrganizationContactLastName,
-                                                  OrganizationProgram.OrganizationProgramDescription,
-                                                  TrackerDonors.TrackerDonorsFirstName,
-                                                  TrackerDonors.TrackerDonorsLastName,
-                                                  DeviceModels.DeviceModelName)\
-                                     .all()
+@admin_required
+def export_data(data_type):
+    # Define the appropriate query based on the data type requested
+    if data_type == 'fulfilled_requests':
+        data = db.session.query(OrganizationProgram, TrackerDonorDevices, DeviceModels, TrackerDonors).join(
+            TrackerDonorDevices, TrackerDonorDevices.OrganizationProgramKey == OrganizationProgram.OrganizationProgramKey
+        ).join(
+            DeviceModels, TrackerDonorDevices.DeviceModelKey == DeviceModels.DeviceModelKey
+        ).join(
+            TrackerDonors, TrackerDonorDevices.TrackerDonorsKey == TrackerDonors.TrackerDonorKey
+        ).filter(OrganizationProgram.OrganizationProgramTrackersNumberSent > 0).all()
+
+        # Prepare the data for export
+        rows = [{
+            'Request Description': request.OrganizationProgram.OrganizationProgramDescription,
+            'Trackers Sent': request.OrganizationProgram.OrganizationProgramTrackersNumberSent,
+            'Device Model': request.DeviceModels.DeviceModelName,
+            'Donor': f"{request.TrackerDonors.TrackerDonorsFirstName} {request.TrackerDonors.TrackerDonorsLastName}",
+            'Date Sent': request.TrackerDonorDevices.TrackerDonationDateSentOut.strftime('%Y-%m-%d') if request.TrackerDonorDevices.TrackerDonationDateSentOut else 'N/A'
+        } for request in data]
         
-        devices = DeviceModels.query.all()
-        donors = TrackerDonors.query.all()
-        organizations = Organization.query.all()
+    elif data_type == 'donors':
+        data = TrackerDonors.query.all()
+        rows = [{
+            'First Name': donor.TrackerDonorsFirstName,
+            'Last Name': donor.TrackerDonorsLastName,
+            'Address': f"{donor.TrackerDonorsAddress1}, {donor.TrackerDonorsAddress2}",
+            'City': donor.TrackerDonorsCity,
+            'State': donor.state.StateName if donor.state else 'N/A',
+            'Zip Code': donor.TrackerDonorsZipCode
+        } for donor in data]
 
-        return render_template('index.html', devices=devices, donors=donors, organizations=organizations)
+    elif data_type == 'organizations':
+        data = Organization.query.all()
+        rows = [{
+            'Organization Name': org.OrganizationName,
+            'City': org.OrganizationCity,
+            'State': org.state.StateName if org.state else 'N/A',
+            'Zip Code': org.OrganizationZipCode,
+            'Contact Name': f"{org.OrganizationContactFirstName} {org.OrganizationContactLastName}",
+            'Contact Email': org.OrganizationContactEmailAddress
+        } for org in data]
+        
     else:
-        # Query for public data
-        organizations = Organization.query.all()
-        device_counts = db.session.query(DeviceModels.DeviceModelName, db.func.sum(DeviceModels.DeviceCount).label('DeviceCount'))\
-                                  .group_by(DeviceModels.DeviceModelName)\
-                                  .all()
+        flash('Invalid data type for export', 'danger')
+        return redirect(url_for('create_main'))
 
-        organizations_df = [{
-            'OrganizationName': org.OrganizationName,
-            'OrganizationTypeKey': org.OrganizationTypeKey,
-            'OrganizationAddress1': org.OrganizationAddress1,
-            'OrganizationCity': org.OrganizationCity,
-            'OrganizationStateKey': org.OrganizationStateKey,
-            'OrganizationZipCode': org.OrganizationZipCode,
-            'OrganizationContactFirstName': org.OrganizationContactFirstName,
-            'OrganizationContactLastName': org.OrganizationContactLastName,
-            'OrganizationContactEmailAddress': org.OrganizationContactEmailAddress,
-            'OrganizationContactPhoneNumber': org.OrganizationContactPhoneNumber,
-            'OrganizationKey': org.OrganizationKey  # Ensure OrganizationKey is included
-        } for org in organizations]
+    # Convert data to DataFrame
+    df = pd.DataFrame(rows)
 
-        devices = DeviceModels.query.all()
-
-        return render_template('index.html', organizations=organizations_df, devices=devices)
-
-# Route to add a request for an organization
-@app.route('/add_request', methods=['GET', 'POST'])
-@login_required
-def add_request():
-    if request.method == 'POST':
-        organization_key = request.form.get('OrganizationKey')
-        description = request.form.get('Description')
-        trackers_requested = request.form.get('TrackersRequested')
-        date_requested = request.form.get('DateRequested')
-
-        if organization_key and description and trackers_requested and date_requested:
-            new_request = OrganizationProgram(
-                OrganizationKey=organization_key,
-                OrganizationProgramDescription=description,
-                OrganizationProgramTrackersNumberRequested=trackers_requested,
-                OrganizationProgramDateRequested=datetime.strptime(date_requested, '%Y-%m-%d')
-            )
-
-            db.session.add(new_request)
-            db.session.commit()
-            
-            return redirect(url_for('create_main'))
-        else:
-            print("Form data missing")
-            return "Form data missing", 400
-
-    organizations = Organization.query.all()
-    return render_template('add_request.html', organizations=organizations)
-
-# Route to fulfill a request for an organization
-@app.route('/fulfill_request', methods=['GET', 'POST'])
-@login_required
-def fulfill_request():
-    if request.method == 'POST':
-        request_id = request.form.get('RequestId')
-        trackers_sent = request.form.get('TrackersSent')
-        date_sent = request.form.get('DateSent')
-
-        request_obj = OrganizationProgram.query.get(request_id)
-
-        if request_obj and trackers_sent and date_sent:
-            request_obj.OrganizationProgramTrackersNumberSent = trackers_sent
-            request_obj.OrganizationProgramDateSentOut = datetime.strptime(date_sent, '%Y-%m-%d')
-            
-            db.session.commit()
-            
-            return redirect(url_for('create_main'))
-        else:
-            print("Form data missing")
-            return "Form data missing", 400
-
-    requests = OrganizationProgram.query.all()
-    return render_template('fulfill_request.html', requests=requests)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    # Convert to CSV or Excel depending on query string param
+    export_format = request.args.get('format', 'csv')
+    if export_format == 'csv':
+        file_name = f'{data_type}_export.csv'
+        csv_data = df.to_csv(index=False)
+        return send_file(BytesIO(csv_data.encode('utf-8')), mimetype='text/csv', attachment_filename=file_name, as_attachment=True)
+    elif export_format == 'excel':
+        file_name = f'{data_type}_export.xlsx'
+        output = BytesIO()
+        df.to_excel(output, index=False, engine='openpyxl')
+        output.seek(0)
+        return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', attachment_filename=file_name, as_attachment=True)
+    else:
+        flash('Unsupported export format', 'danger')
+        return redirect(url_for('create_main'))
