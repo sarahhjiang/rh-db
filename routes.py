@@ -32,20 +32,24 @@ bcrypt.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Create client and authenticate w/ API key
-client = RESTClient(polygonAPIkey)
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'data')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 # Create tables/db file
 with app.app_context():
     db.create_all()
 
+
 # Utility function to check if the user is an admin
 def is_admin():
     return current_user.is_authenticated and current_user.role == 'admin'
+
 
 # Custom decorator for admin routes
 from functools import wraps
@@ -58,11 +62,13 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 # Search page route
 @app.route('/search')
 @login_required
 def search():
     return render_template('search.html')
+
 
 # Search results route
 @app.route('/search_results', methods=['GET'])
@@ -118,7 +124,6 @@ def add_device():
                 db.session.add(new_device_model)
                 db.session.flush()
 
-                # Convert the date string from the form to a datetime object
                 donation_date = datetime.strptime(TrackerDonationDateReceived, '%Y-%m-%d')
 
                 new_device = TrackerDonorDevices(
@@ -136,6 +141,7 @@ def add_device():
             return "Form data missing", 400
 
     return render_template('add_device.html')
+
 
 # Route to remove a device (admin-only)
 @app.route('/remove_device', methods=['GET', 'POST'])
@@ -167,6 +173,7 @@ def remove_device():
     devices = DeviceModels.query.all()
     donors = TrackerDonors.query.all()
     return render_template('remove_device.html', devices=devices, donors=donors)
+
 
 # Route to add a donor (admin-only)
 @app.route('/add_donor', methods=['GET', 'POST'])
@@ -202,6 +209,7 @@ def add_donor():
 
     return render_template('add_donor.html')
 
+
 # Route to remove a donor (admin-only)
 @app.route('/remove_donor', methods=['GET', 'POST'])
 @login_required
@@ -222,7 +230,8 @@ def remove_donor():
     donors = TrackerDonors.query.all()
     return render_template('remove_donor.html', donors=donors)
 
-# Admin-only routes for adding/removing organizations
+
+# Route to add an organization (admin-only)
 @app.route('/add_organization', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -241,6 +250,8 @@ def add_organization():
         contact_phone = request.form.get('ContactPhoneNumber')
 
         if org_name and org_type_key and address1 and city and state_key and zip_code and contact_first_name and contact_last_name and contact_email and contact_phone:
+           
+
             new_org = Organization(
                 OrganizationName=org_name,
                 OrganizationTypeKey=org_type_key,
@@ -578,3 +589,10 @@ def upload_excel():
             return redirect(url_for('create_main'))
 
     return render_template('upload_excel.html')
+
+@app.route('/organization_requests/<int:org_id>', methods=['GET'])
+@login_required
+def organization_requests(org_id):
+    organization = Organization.query.get_or_404(org_id)
+    requests = OrganizationProgram.query.filter_by(OrganizationKey=org_id).all()
+    return render_template('organization_requests.html', organization=organization, requests=requests)

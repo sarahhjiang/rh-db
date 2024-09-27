@@ -11,10 +11,10 @@
         </tr>
         {% for device in devices %}
         <tr>
-            <td>{{ device.device_model.DeviceModelName }}</td>
-            <td>{{ device.device_model.DeviceCount }}</td>
-            <td>{{ device.device_model.DeviceManufacturerKey }}</td>
-            <td>{{ device.TrackerDonationDateReceived.strftime('%m/%d/%Y') }}</td>
+            <td>{{ device.device.DeviceModelName }}</td>
+            <td>{{ device.device.DeviceCount }}</td>
+            <td>{{ device.device.DeviceManufacturerKey }}</td>
+            <td>{{ device.TrackerDonationDateReceived.strftime('%m/%d/%Y') if device.TrackerDonationDateReceived else 'N/A' }}</td>
         </tr>
         {% endfor %}
     </table>

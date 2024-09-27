@@ -118,24 +118,26 @@ class TrackerDonors(db.Model):
     TrackerDonorsStateKey = db.Column(db.Integer, db.ForeignKey('tlkpState.StateKey'))
     TrackerDonorsZipCode = db.Column(db.String(10))
 
+    devices = db.relationship('TrackerDonorDevices', backref='donor', lazy=True)
+
     def __repr__(self):
         return f'<TrackerDonor {self.TrackerDonorsFirstName} {self.TrackerDonorsLastName}>'
+
 
 
 class TrackerDonorDevices(db.Model):
     __tablename__ = 'tblTrackerDonorDevices'
     TrackerDonorDevicesKey = db.Column(db.Integer, primary_key=True)
     TrackerDonorsKey = db.Column(db.Integer, db.ForeignKey('tblTrackerDonors.TrackerDonorKey', ondelete="CASCADE"), nullable=False)
+    DeviceModelKey = db.Column(db.Integer, db.ForeignKey('tlkpDeviceModels.DeviceModelKey'), nullable=False)
+    OrganizationProgramKey = db.Column(db.Integer, db.ForeignKey('tblOrganizationProgram.OrganizationProgramKey'), nullable=True)
     TrackerDonationDateReceived = db.Column(db.DateTime, nullable=True)
     TrackerDonationLetter = db.Column(db.String, nullable=True)
-    DeviceModelKey = db.Column(db.Integer, db.ForeignKey('tlkpDeviceModels.DeviceModelKey'), nullable=False)
-    OrganizationProgramKey = db.Column(db.Integer, db.ForeignKey('tblOrganizationProgram.OrganizationProgramKey'), nullable=True)  # Make nullable
     TrackerDonationDateSentOut = db.Column(db.DateTime, nullable=True)
     TrackerDonorDevicesDateCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
-    device_model = db.relationship('DeviceModels', backref='tracker_donor_devices', lazy=True)
-    device = db.relationship('DeviceModels', overlaps='device_model, tracker_donor_devices')
-    def __repr__(self):
-        return f'<TrackerDonorDevices {self.TrackerDonationLetter}>'
+    
+    # Add 'overlaps' to resolve conflicts with DeviceModels
+    device = db.relationship('DeviceModels', overlaps='device_model, tracker_donor_devices', back_populates='donations')
 
 
 class DeviceModels(db.Model):
@@ -145,10 +147,9 @@ class DeviceModels(db.Model):
     DeviceModelName = db.Column(db.String, nullable=True)
     DeviceCount = db.Column(db.Integer, nullable=True)
     DeviceModelCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
-    donations = db.relationship('TrackerDonorDevices', backref='device', lazy=True)
-    donations = db.relationship('TrackerDonorDevices', overlaps='device_model, tracker_donor_devices')
-    def __repr__(self):
-        return f'<DeviceModels {self.DeviceModelName}>'
+    
+    # Add 'overlaps' to resolve conflicts with TrackerDonorDevices
+    donations = db.relationship('TrackerDonorDevices', overlaps='device_model, tracker_donor_devices', back_populates='device')
 
 
 class DeviceManufacturer(db.Model):
