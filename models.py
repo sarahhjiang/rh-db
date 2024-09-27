@@ -133,7 +133,7 @@ class TrackerDonorDevices(db.Model):
     TrackerDonationDateSentOut = db.Column(db.DateTime, nullable=True)
     TrackerDonorDevicesDateCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
     device_model = db.relationship('DeviceModels', backref='tracker_donor_devices', lazy=True)
-
+    device = db.relationship('DeviceModels', overlaps='device_model, tracker_donor_devices')
     def __repr__(self):
         return f'<TrackerDonorDevices {self.TrackerDonationLetter}>'
 
@@ -146,7 +146,7 @@ class DeviceModels(db.Model):
     DeviceCount = db.Column(db.Integer, nullable=True)
     DeviceModelCreateTS = db.Column(db.DateTime, default=datetime.utcnow)
     donations = db.relationship('TrackerDonorDevices', backref='device', lazy=True)
-
+    donations = db.relationship('TrackerDonorDevices', overlaps='device_model, tracker_donor_devices')
     def __repr__(self):
         return f'<DeviceModels {self.DeviceModelName}>'
 
