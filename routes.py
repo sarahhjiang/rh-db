@@ -596,3 +596,33 @@ def organization_requests(org_id):
     organization = Organization.query.get_or_404(org_id)
     requests = OrganizationProgram.query.filter_by(OrganizationKey=org_id).all()
     return render_template('organization_requests.html', organization=organization, requests=requests)
+
+# Route to add a request for an organization
+@app.route('/add_request', methods=['GET', 'POST'])
+@login_required
+def add_request():
+    if request.method == 'POST':
+        organization_key = request.form.get('OrganizationKey')
+        description = request.form.get('Description')
+        trackers_requested = request.form.get('TrackersRequested')
+        date_requested = request.form.get('DateRequested')
+
+        if organization_key and description and trackers_requested and date_requested:
+            new_request = OrganizationProgram(
+                OrganizationKey=organization_key,
+                OrganizationProgramDescription=description,
+                OrganizationProgramTrackersNumberRequested=trackers_requested,
+                OrganizationProgramDateRequested=datetime.strptime(date_requested, '%Y-%m-%d')
+            )
+
+            db.session.add(new_request)
+            db.session.commit()
+            
+            return redirect(url_for('create_main'))
+        else:
+            print("Form data missing")
+            return "Form data missing", 400
+
+    organizations = Organization.query.all()
+    return render_template('add_request.html', organizations=organizations)
+
