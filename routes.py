@@ -11,7 +11,7 @@ from datetime import datetime
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from io import BytesIO
-from plotting import plot_donors_per_state
+from plotting import plot_donors_per_state, plot_devices_per_state
 
 from models import db, ma, bcrypt, User, Organization, OrganizationProgram, Communication, CommunicationType, State, TrackerDonors, TrackerDonorDevices, DeviceModels, DeviceManufacturer
 
@@ -339,6 +339,62 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/', methods=['GET'])
+@login_required
+def create_main():
+    if current_user.role == 'admin':
+        all_data = Organization.query.join(OrganizationProgram, Organization.OrganizationKey == OrganizationProgram.OrganizationKey)\
+                                     .join(TrackerDonorDevices, OrganizationProgram.OrganizationProgramKey == TrackerDonorDevices.OrganizationProgramKey)\
+                                     .join(TrackerDonors, TrackerDonorDevices.TrackerDonorsKey == TrackerDonors.TrackerDonorKey)\
+                                     .join(DeviceModels, TrackerDonorDevices.DeviceModelKey == DeviceModels.DeviceModelKey)\
+                                     .add_columns(Organization.OrganizationName,
+                                                  Organization.OrganizationContactFirstName,
+                                                  Organization.OrganizationContactLastName,
+                                                  OrganizationProgram.OrganizationProgramDescription,
+                                                  TrackerDonors.TrackerDonorsFirstName,
+                                                  TrackerDonors.TrackerDonorsLastName,
+                                                  DeviceModels.DeviceModelName)\
+                                     .all()
+        
+        devices = DeviceModels.query.all()
+        donors = TrackerDonors.query.all()
+        organizations = Organization.query.all()
+
+        return render_template('index.html', devices=devices, donors=donors, organizations=organizations)
+    else:
+        # Query for public data
+        organizations = Organization.query.all()
+        device_counts = db.session.query(DeviceModels.DeviceModelName, db.func.sum(DeviceModels.DeviceCount).label('DeviceCount'))\
+                                  .group_by(DeviceModels.DeviceModelName)\
+                                  .all()
+
+        organizations_df = [{
+            'OrganizationName': org.OrganizationName,
+            'OrganizationTypeKey': org.OrganizationTypeKey,
+            'OrganizationAddress1': org.OrganizationAddress1,
+            'OrganizationCity': org.OrganizationCity,
+            'OrganizationStateKey': org.OrganizationStateKey,
+            'OrganizationZipCode': org.OrganizationZipCode,
+            'OrganizationContactFirstName': org.OrganizationContactFirstName,
+            'OrganizationContactLastName': org.OrganizationContactLastName,
+            'OrganizationContactEmailAddress': org.OrganizationContactEmailAddress,
+            'OrganizationContactPhoneNumber': org.OrganizationContactPhoneNumber,
+            'OrganizationKey': org.OrganizationKey  # Ensure OrganizationKey is included
+        } for org in organizations]
+
+        devices = DeviceModels.query.all()
+
+        return render_template('index.html', organizations=organizations_df, devices=devices)
+
+
+@app.route('/donor/<int:donor_id>/devices', methods=['GET'])
+@login_required
+def donor_devices(donor_id):
+    donor = TrackerDonors.query.get_or_404(donor_id)
+    devices = TrackerDonorDevices.query.filter_by(TrackerDonorsKey=donor_id).all()
+    return render_template('donor_devices.html', donor=donor, devices=devices)
+
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -411,4 +467,26 @@ def export_data(data_type):
         return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', attachment_filename=file_name, as_attachment=True)
     else:
         flash('Unsupported export format', 'danger')
+        return redirect(url_for('create_main'))
+
+
+@app.route('/plot_donors', methods=['GET'])
+@login_required
+def plot_donors():
+    plot_path = plot_donors_per_state(os.getenv('DATABASE_URL')) 
+    if plot_path:
+        return render_template('plot_donors.html', plot_path=plot_path)
+    else:
+        flash('Unable to generate plot', 'danger')
+        return redirect(url_for('create_main'))
+
+
+@app.route('/plot_devices', methods=['GET'])
+@login_required
+def plot_devices():
+    plot_path = plot_devices_per_state(os.getenv('DATABASE_URL')) 
+    if plot_path:
+        return render_template('plot.html', plot_path=plot_path)
+    else:
+        flash('Unable to generate plot', 'danger')
         return redirect(url_for('create_main'))
