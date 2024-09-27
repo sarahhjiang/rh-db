@@ -32,8 +32,9 @@ bcrypt.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'data')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# UPLOAD_FOLDER = os.path.join(os.getcwd(), 'data')
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = '/opt/render/project/src/data'
 
 
 @login_manager.user_loader
