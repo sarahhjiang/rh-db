@@ -490,3 +490,84 @@ def plot_devices():
     else:
         flash('Unable to generate plot', 'danger')
         return redirect(url_for('create_main'))
+
+
+@app.route('/upload_excel', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def upload_excel():
+    if request.method == 'POST':
+        table_name = request.form.get('table_name')
+        file = request.files['file']
+
+        # Validate the selected table and file
+        if not file or not table_name:
+            flash('Please select a table and upload a file.', 'danger')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+
+            # Read the Excel file using pandas
+            try:
+                df = pd.read_excel(file_path)
+
+                # Handle data upload based on the selected table
+                if table_name == 'donors':
+                    for index, row in df.iterrows():
+                        new_donor = TrackerDonors(
+                            TrackerDonorsFirstName=row['FirstName'],
+                            TrackerDonorsLastName=row['LastName'],
+                            TrackerDonorsAddress1=row['Address1'],
+                            TrackerDonorsAddress2=row.get('Address2', None),
+                            TrackerDonorsCity=row['City'],
+                            TrackerDonorsStateKey=row['StateKey'],
+                            TrackerDonorsZipCode=row['ZipCode']
+                        )
+                        db.session.add(new_donor)
+                
+                elif table_name == 'devices':
+                    for index, row in df.iterrows():
+                        new_device = DeviceModels(
+                            DeviceModelName=row['DeviceModelName'],
+                            DeviceManufacturerKey=row['DeviceManufacturerKey'],
+                            DeviceCount=row['DeviceCount']
+                        )
+                        db.session.add(new_device)
+
+                elif table_name == 'organizations':
+                    for index, row in df.iterrows():
+                        new_org = Organization(
+                            OrganizationName=row['OrganizationName'],
+                            OrganizationCity=row['City'],
+                            OrganizationStateKey=row['StateKey'],
+                            OrganizationZipCode=row['ZipCode'],
+                            OrganizationContactFirstName=row['ContactFirstName'],
+                            OrganizationContactLastName=row['ContactLastName'],
+                            OrganizationContactEmailAddress=row.get('ContactEmailAddress', ''),
+                            OrganizationContactPhoneNumber=row.get('ContactPhoneNumber', '')
+                        )
+                        db.session.add(new_org)
+
+                # Added logic for Donor Devices
+                elif table_name == 'donor_devices':
+                    for index, row in df.iterrows():
+                        new_donor_device = TrackerDonorDevices(
+                            TrackerDonorsKey=row['TrackerDonorsKey'],  # This should match with a valid donor
+                            DeviceModelKey=row['DeviceModelKey'],  # This should match with a valid device model
+                            TrackerDonationDateReceived=datetime.strptime(row['TrackerDonationDateReceived'], '%Y-%m-%d')
+                        )
+                        db.session.add(new_donor_device)
+
+                db.session.commit()
+                flash('Data imported successfully!', 'success')
+
+            except Exception as e:
+                flash(f'Error processing file: {str(e)}', 'danger')
+                return redirect(request.url)
+
+            return redirect(url_for('create_main'))
+
+    return render_template('upload_excel.html')

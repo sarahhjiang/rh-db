@@ -4,18 +4,53 @@
     <h1>Upload Excel File</h1>
 
     <form action="{{ url_for('upload_excel') }}" method="post" enctype="multipart/form-data">
+        <label for="table_name">Select the type of data to upload:</label><br><br>
+        <select id="table_name" name="table_name" required>
+            <option value="" disabled selected>Select table</option>
+            <option value="donors">Donors</option>
+            <option value="devices">Devices</option>
+            <option value="organizations">Organizations</option>
+            <option value="donor_devices">Donor Devices</option>  <!-- Added Donor Devices option -->
+        </select>
+        <br><br>
+
         <label for="file">Select an Excel file:</label><br><br>
         <input type="file" id="file" name="file" required><br><br>
+
         <input type="submit" value="Upload">
     </form>
 
-    <p>Ensure the Excel file contains the following columns:</p>
-    <ul>
-        <li>FirstName</li>
-        <li>LastName</li>
-        <li>Address1</li>
-        <li>City</li>
-        <li>StateKey</li>
-        <li>ZipCode</li>
-    </ul>
+    <p>Ensure the Excel file contains the appropriate columns for the selected table:</p>
+    <div id="instructions">
+        <h4>For Donors:</h4>
+        <ul>
+            <li>FirstName</li>
+            <li>LastName</li>
+            <li>Address1</li>
+            <li>City</li>
+            <li>StateKey</li>
+            <li>ZipCode</li>
+        </ul>
+        <h4>For Devices:</h4>
+        <ul>
+            <li>DeviceModelName</li>
+            <li>DeviceManufacturerKey</li>
+            <li>DeviceCount</li>
+        </ul>
+        <h4>For Organizations:</h4>
+        <ul>
+            <li>OrganizationName</li>
+            <li>City</li>
+            <li>StateKey</li>
+            <li>ZipCode</li>
+            <li>ContactFirstName</li>
+            <li>ContactLastName</li>
+        </ul>
+        <h4>For Donor Devices:</h4>  <!-- Added Donor Devices instructions -->
+        <ul>
+            <li>TrackerDonorsKey</li>
+            <li>DeviceModelKey</li>
+            <li>TrackerDonationDateReceived</li>
+        </ul>
+    </div>
 {% endblock %}
