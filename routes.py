@@ -12,6 +12,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from io import BytesIO
 from plotting import plot_donors_per_state, plot_devices_per_state
+from werkzeug.utils import secure_filename
 
 from models import db, ma, bcrypt, User, Organization, OrganizationProgram, Communication, CommunicationType, State, TrackerDonors, TrackerDonorDevices, DeviceModels, DeviceManufacturer
 
@@ -491,6 +492,13 @@ def plot_devices():
         flash('Unable to generate plot', 'danger')
         return redirect(url_for('create_main'))
 
+def allowed_file(filename):
+    # Define the allowed extensions
+    ALLOWED_EXTENSIONS = {'xls', 'xlsx'}
+    
+    # Check if the filename has a valid extension
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/upload_excel', methods=['GET', 'POST'])
 @login_required
@@ -505,7 +513,7 @@ def upload_excel():
             flash('Please select a table and upload a file.', 'danger')
             return redirect(request.url)
 
-        if file and allowed_file(file.filename):
+        if file and allowed_file(file.filename):  # Ensure allowed_file is defined
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
@@ -551,12 +559,11 @@ def upload_excel():
                         )
                         db.session.add(new_org)
 
-                # Added logic for Donor Devices
                 elif table_name == 'donor_devices':
                     for index, row in df.iterrows():
                         new_donor_device = TrackerDonorDevices(
-                            TrackerDonorsKey=row['TrackerDonorsKey'],  # This should match with a valid donor
-                            DeviceModelKey=row['DeviceModelKey'],  # This should match with a valid device model
+                            TrackerDonorsKey=row['TrackerDonorsKey'],  
+                            DeviceModelKey=row['DeviceModelKey'],  
                             TrackerDonationDateReceived=datetime.strptime(row['TrackerDonationDateReceived'], '%Y-%m-%d')
                         )
                         db.session.add(new_donor_device)
