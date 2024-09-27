@@ -88,6 +88,7 @@ ply==3.11
 polygon-api-client==1.13.7
 prompt-toolkit==3.0.39
 psutil==5.9.5
+psycopg2==2.9.7
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pycparser==2.21
