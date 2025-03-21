@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Devices Donated by {{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}</h1>
+    <form method="POST" action="{{ url_for('delete_selected_devices', donor_id=donor.TrackerDonorKey) }}">
+        <table>
+            <tr>
+                <th>Select</th>
+                <th>Device Serial Number</th>
+                <th>Device Model Name</th>
+                <th>Device Count</th>
+                <th>Manufacturer</th>
+                <th>Donation Date</th>
+            </tr>
+            {% for device in devices %}
+            <tr>
+                <td><input type="checkbox" name="device_ids" value="{{ device.TrackerDonorDevicesKey }}"></td>
+                <td>{{ device.TrackerDonorDevicesKey }}</td>
+                <td>{{ device.device.DeviceModelName }}</td>
+                <td>{{ device.device.DeviceCount }}</td>
+                <td>{{ device.device.DeviceManufacturerKey }}</td>
+                <td>{{ device.TrackerDonationDateReceived.strftime('%m/%d/%Y') if device.TrackerDonationDateReceived else 'N/A' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <button type="submit">Delete Selected Devices</button>
+    </form>
+{% endblock %}

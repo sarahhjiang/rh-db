@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Requests for {{ organization.OrganizationName }}</h1>
+    <table>
+        <tr>
+            <th>Program Description</th>
+            <th>Date Requested</th>
+            <!-- <th>Date Sent Out</th> -->
+            <th>Device Number Requested</th>
+            <!-- <th>Device Number Sent</th> -->
+            <th>Devices (Serial Numbers)</th>
+        </tr>
+        {% for entry in requests_with_devices %}
+        <tr>
+            <td>{{ entry.request.OrganizationProgramDescription }}</td>
+            <td>{{ entry.request.OrganizationProgramDateRequested.strftime('%m/%d/%Y') if entry.request.OrganizationProgramDateRequested else 'N/A' }}</td>
+            <!-- <td>{{ entry.request.OrganizationProgramDateSentOut.strftime('%m/%d/%Y') if entry.request.OrganizationProgramDateSentOut else 'N/A' }}</td> -->
+            <td>{{ entry.request.OrganizationProgramTrackersNumberRequested }}</td>
+            <!-- <td>{{ entry.request.OrganizationProgramTrackersNumberSent }}</td> -->
+            <td>
+                {% if entry.devices %}
+                    <ul>
+                        {% for device in entry.devices %}
+                            <li>{{ device.DeviceSerialNumber }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    No devices assigned
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Add Device to Request</h2>
+    <form method="POST">
+        <label for="serial_number">Device Serial Number:</label>
+        <select id="serial_number" name="serial_number" required>
+            {% for device in available_devices %}
+                <option value="{{ device.DeviceSerialNumber }}">{{ device.DeviceSerialNumber }}</option>
+            {% endfor %}
+        </select>
+        <label for="request_id">Request Description:</label>
+        <select id="request_id" name="request_id" required>
+            {% for entry in requests_with_devices %}
+                <option value="{{ entry.request.OrganizationProgramKey }}">{{ entry.request.OrganizationProgramDescription }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Add Device</button>
+    </form>
+{% endblock %}

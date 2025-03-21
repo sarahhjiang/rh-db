@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Add a New Donor</h1>
+    <form action="{{ url_for('add_donor') }}" method="post">
+        <label for="FirstName">First Name:</label><br>
+        <input type="text" id="FirstName" name="FirstName" required><br><br>
+        <label for="LastName">Last Name:</label><br>
+        <input type="text" id="LastName" name="LastName" required><br><br>
+        <label for="Address1">Address 1:</label><br>
+        <input type="text" id="Address1" name="Address1" required><br><br>
+        <label for="Address2">Address 2:</label><br>
+        <input type="text" id="Address2" name="Address2"><br><br>
+        <label for="City">City:</label><br>
+        <input type="text" id="City" name="City" required><br><br>
+        <label for="StateKey">State:</label><br>
+        <input type="text" id="StateKey" name="StateKey" required><br><br>
+        <label for="ZipCode">Zip Code:</label><br>
+        <input type="text" id="ZipCode" name="ZipCode" required><br><br>
+        <input type="submit" value="Add Donor">
+    </form>
+{% endblock %}

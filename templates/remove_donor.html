@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Remove Donor</h1>
+<form action="{{ url_for('remove_donor') }}" method="post">
+    <label for="TrackerDonorKey">Select Donor to Remove:</label><br>
+    <select id="TrackerDonorKey" name="TrackerDonorKey" required>
+        {% for donor in donors %}
+            <option value="{{ donor.TrackerDonorKey }}">{{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}</option>
+        {% endfor %}
+    </select><br><br>
+    <input type="submit" value="Remove Donor">
+</form>
+{% endblock %}

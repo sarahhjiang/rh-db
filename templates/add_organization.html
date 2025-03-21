@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Add a New Organization</h1>
+    <form action="{{ url_for('add_organization') }}" method="post">
+        <label for="OrganizationName">Organization Name:</label><br>
+        <input type="text" id="OrganizationName" name="OrganizationName" required><br><br>
+        <label for="OrganizationTypeKey">Organization Type:</label><br>
+        <input type="text" id="OrganizationTypeKey" name="OrganizationTypeKey" required><br><br>
+        <label for="Address1">Address 1:</label><br>
+        <input type="text" id="Address1" name="Address1" required><br><br>
+        <label for="City">City:</label><br>
+        <input type="text" id="City" name="City" required><br><br>
+        <label for="StateKey">State:</label><br>
+        <input type="text" id="StateKey" name="StateKey" required><br><br>
+        <label for="ZipCode">Zip Code:</label><br>
+        <input type="text" id="ZipCode" name="ZipCode" required><br><br>
+        <label for="ContactFirstName">Contact First Name:</label><br>
+        <input type="text" id="ContactFirstName" name="ContactFirstName" required><br><br>
+        <label for="ContactLastName">Contact Last Name:</label><br>
+        <input type="text" id="ContactLastName" name="ContactLastName" required><br><br>
+        <label for="ContactEmailAddress">Contact Email:</label><br>
+        <input type="email" id="ContactEmailAddress" name="ContactEmailAddress" required><br><br>
+        <label for="ContactPhoneNumber">Contact Phone:</label><br>
+        <input type="text" id="ContactPhoneNumber" name="ContactPhoneNumber" required><br><br>
+        <input type="submit" value="Add Organization">
+    </form>
+{% endblock %}

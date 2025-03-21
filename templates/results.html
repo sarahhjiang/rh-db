@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Search Results</h1>
+
+    {% if search_type == 'donors' %}
+        <h2>Donors</h2>
+        {% if results %}
+            <ul class="list-group">
+            {% for donor in results %}
+                <li class="list-group-item">
+                    {{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-warning" role="alert">No donors found.</div>
+        {% endif %}
+    {% elif search_type == 'organizations' %}
+        <h2>Organizations</h2>
+        {% if results %}
+            <ul class="list-group">
+            {% for org in results %}
+                <li class="list-group-item">
+                    {{ org.OrganizationName }}
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-warning" role="alert">No organizations found.</div>
+        {% endif %}
+    {% elif search_type == 'devices' %}
+        <h2>Devices</h2>
+        {% if results %}
+            <ul class="list-group">
+            {% for device, model, donor in results %}
+                <li class="list-group-item">
+                    <strong>Model Name:</strong> {{ model.DeviceModelName }}<br>
+                    <strong>Count:</strong> {{ model.DeviceCount }}<br>
+                    <strong>Donor:</strong> {{ donor.TrackerDonorsFirstName }} {{ donor.TrackerDonorsLastName }}<br>
+                    <strong>Serial Number:</strong> {{ device.DeviceSerialNumber }}<br>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-warning" role="alert">No devices found.</div>
+        {% endif %}
+    {% endif %}
+
+    <a href="{{ url_for('search') }}" class="btn btn-secondary mt-4">Back to Search</a>
+    <a href="{{ url_for('create_main') }}" class="btn btn-primary mt-4">Back to Home</a>
+</div>
+{% endblock %}
