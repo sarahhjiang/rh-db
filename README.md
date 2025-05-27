@@ -1,93 +1,119 @@
 # RH-DB
 
+# RecycleHealth Dashboard
 
+**Project Title:** Recycle Health × Duke BIG IDEAs Lab Collaboration
+**Timeline:** May 2024 – Sept. 2024
+**Team:**
 
-## Getting started
+* Sarah Jiang (Pratt ‘25)
+* Rachele Manning (Recycle Health)
+* Stephanie Sullivan (Duke BIG IDEAs Lab)
+* Dr. Jessilyn Dunn (Duke BIG IDEAs Lab)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 🔍 Overview
 
-## Add your files
+The RecycleHealth Dashboard is a full-stack web application developed to manage, visualize, and analyze data related to the donation and distribution of wearable health devices. It tracks donors, devices, recipient organizations, and request programs to provide insight into device flow and distribution.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+---
 
+## 🚀 Project Goals
+
+* Build a web-based dashboard for storing and querying device donation data
+* Enable user-friendly views of donor and organization activity
+* Support admins with data upload, editing, and visualization tools
+
+---
+
+## 🛠️ Tech Stack
+
+* **Backend:** Flask (Python)
+* **Frontend:** HTML/CSS (Jinja templates)
+* **Database (Testing):** SQLite
+* **Database (Production):** PostgreSQL
+* **Deployment:** [Render](https://render.com)
+
+### 🔗 Source Code
+
+* **Production GitHub repo:** [github.com/sarahhjiang/rh-db](https://github.com/sarahhjiang/rh-db)
+* **Testing GitLab repo:** [gitlab.oit.duke.edu/sj344/RH-dashboard](https://gitlab.oit.duke.edu/sj344/RH-dashboard)
+
+---
+
+## 📦 Key Features
+
+* **User Roles:** Public vs Admin, with tailored data views
+* **Data Import:** Upload data via Excel (template provided)
+* **CRUD Operations:** Add, remove, edit donors, devices, orgs, and requests
+* **Search:** Lookup donors, devices, or orgs by name
+* **Visualization:** Heatmaps of donor/device locations, request distribution
+* **Authentication:** Local user accounts with role-based access
+* **Secure (Local Option):** Locally hosted version for sensitive data handling
+
+---
+
+## 🧪 Running the App Locally
+
+### 1. Clone the Repo
+
+```bash
+git clone git@github.com:sarahhjiang/rh-db.git
+cd rh-db
 ```
-cd existing_repo
-git remote add origin https://gitlab.oit.duke.edu/sj344/rh-db.git
-git branch -M main
-git push -uf origin main
+
+Or download ZIP → open in VSCode → `git pull` for updates.
+
+### 2. Set Up Environment
+
+#### Option 1: Conda with `requirements.txt`
+
+```bash
+conda create --name rh-env --file requirements.txt
+conda activate rh-env
 ```
 
-## Integrate with your tools
+#### Option 2: Manual
 
-- [ ] [Set up project integrations](https://gitlab.oit.duke.edu/sj344/rh-db/-/settings/integrations)
+```bash
+conda create --name rh-env
+conda activate rh-env
+pip install -r requirements.txt
+```
 
-## Collaborate with your team
+### 3. Run the App
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```bash
+python3 run.py
+```
 
-## Test and Deploy
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) to view the local app.
 
-Use the built-in continuous integration in GitLab.
+To reset the DB:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```bash
+python3 reset_db.py
+```
 
-***
+---
 
-# Editing this README
+## ⚠️ Notes
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+* **Excel Uploads:** Only one sheet per Excel upload. Use provided templates and update one table at a time.
+* **Security:** Local deployments do **not** expose data externally. No password complexity required for local-only users.
+* **Performance:** Long load times on deployed version — contact Bill for investigation.
 
-## Suggestions for a good README
+---
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 📊 Dashboard Summary Pages
 
-## Name
-Choose a self-explaining name for your project.
+* **Organizations & Requests:** View all orgs, request descriptions, and device fulfillment
+* **Donor Overview:** Track all donations and associated devices per donor
+* **Plots:**
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+  * Donors by state
+  * Devices by state
+  * Request destinations
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+---
