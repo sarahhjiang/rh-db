@@ -56,6 +56,12 @@ The RecycleHealth Dashboard is a full-stack web application developed to manage,
 
 ## 🧪 Running the App Locally
 
+Ensure you're in the right folder in terminal (anaconda terminal):
+```bash
+cd path\to\rh-db
+```
+(replace path\to\ with the actual path) 
+
 ### 1. Clone the Repo
 
 ```bash
