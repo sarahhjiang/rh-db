@@ -68,7 +68,8 @@ Or download ZIP → open in VSCode → `git pull` for updates.
 ### 2. Set Up Environment
 
 #### Option 1: Conda with `requirements.txt`
-
+* Must download anaconda prior to environment creation *
+  
 ```bash
 conda create --name rh-env --file requirements.txt
 conda activate rh-env
@@ -83,7 +84,8 @@ pip install -r requirements.txt
 ```
 
 ### 3. Run the App
-
+* Must download python in order to run the .py files *
+  
 ```bash
 python3 run.py
 ```
