@@ -66,9 +66,9 @@ cd rh-db
 Or download ZIP → open in VSCode → `git pull` for updates.
 
 ### 2. Set Up Environment
-
+* Must download anaconda prior to environment creation
+  
 #### Option 1: Conda with `requirements.txt`
-* Must download anaconda prior to environment creation *
   
 ```bash
 conda create --name rh-env --file requirements.txt
@@ -84,7 +84,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Run the App
-* Must download python in order to run the .py files *
+* Must download python in order to run the .py files 
   
 ```bash
 python3 run.py
