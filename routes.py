@@ -630,13 +630,25 @@ def add_request():
 @app.route('/delete_devices', methods=['POST'])
 @login_required
 def delete_devices():
-    device_ids = request.form.getlist('device_ids')  # Get selected device IDs from the form
+    device_ids = request.form.getlist('device_ids')
     if device_ids:
         devices = DeviceModels.query.filter(DeviceModels.DeviceModelKey.in_(device_ids)).all()
+        undeletable = []
+        deletable = []
+
         for device in devices:
-            db.session.delete(device)
+            linked = TrackerDonorDevices.query.filter_by(DeviceModelKey=device.DeviceModelKey).first()
+            if linked:
+                undeletable.append(device.DeviceModelKey)
+            else:
+                db.session.delete(device)
+                deletable.append(device.DeviceModelKey)
+
         db.session.commit()
-        flash(f"{len(device_ids)} devices deleted successfully.", "success")
+        if deletable:
+            flash(f"{len(deletable)} device model(s) deleted successfully.", "success")
+        if undeletable:
+            flash(f"Device model(s) {', '.join(map(str, undeletable))} could not be deleted because they are in use.", "danger")
     else:
         flash("No devices selected.", "warning")
     return redirect(url_for('create_main'))
@@ -645,16 +657,32 @@ def delete_devices():
 @app.route('/delete_donors', methods=['POST'])
 @login_required
 def delete_donors():
-    donor_ids = request.form.getlist('donor_ids')  # Get selected donor IDs from the form
+    donor_ids = request.form.getlist('donor_ids')
     if donor_ids:
         donors = TrackerDonors.query.filter(TrackerDonors.TrackerDonorKey.in_(donor_ids)).all()
+        undeletable = []
+        deletable = []
+
         for donor in donors:
-            db.session.delete(donor)
+            # Check if this donor has any associated devices
+            linked_devices = TrackerDonors.query.filter_by(TrackerDonorKey=donor.TrackerDonorKey).first()
+            if linked_devices:
+                undeletable.append(donor.TrackerDonorKey)
+            else:
+                db.session.delete(donor)
+                deletable.append(donor.TrackerDonorKey)
+
         db.session.commit()
-        flash(f"{len(donor_ids)} donors deleted successfully.", "success")
+
+        if deletable:
+            flash(f"{len(deletable)} donor(s) deleted successfully.", "success")
+        if undeletable:
+            flash(f"Could not delete donor(s) with key(s): {', '.join(map(str, undeletable))} — they have linked device(s).", "danger")
     else:
         flash("No donors selected.", "warning")
+
     return redirect(url_for('create_main'))
+
 
 
 @app.route('/delete_organizations', methods=['POST'])
