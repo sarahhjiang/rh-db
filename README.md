@@ -90,12 +90,15 @@ pip install -r requirements.txt
 ```
 
 ### 3. Run the App
-* Must download python in order to run the .py files 
+* Must download python in order to run the .py files. The below lines start the virtual environment and initialize the web app.
   
+```bash
+conda activate rh-env
+```
+
 ```bash
 python3 run.py
 ```
-
 Open [http://127.0.0.1:5000](http://127.0.0.1:5000) to view the local app.
 
 To reset the DB:
