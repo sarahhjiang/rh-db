@@ -99,6 +99,10 @@ conda activate rh-env
 ```bash
 python3 run.py
 ```
+or for windows
+```bash
+python run.py
+```
 Open [http://127.0.0.1:5000](http://127.0.0.1:5000) to view the local app.
 
 To reset the DB:
